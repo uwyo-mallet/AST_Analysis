@@ -20,9 +20,11 @@ Then, execute the python script to parse and extract characteristics from the AS
 --------------------------------------------------------------------------------------------------------------------
 
 For python code:
-To build the AST, extract characteristics, and visualize, run the following:
+To build the ASTs, extract characteristics, and visualize, run the following:
 
-    python3 python_ast_analysis.py <sourcefile.py>
+    python3 python_ast_analysis.py <sourcefiles.py> 
+
+Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'results.csv'.
 
 ---------------------------------------------------------------------------------------------------------------------
 
