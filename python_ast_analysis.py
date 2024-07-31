@@ -96,7 +96,7 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) >= 2:
         file_paths = sys.argv[1:] #take multiple files
-        output = 'results.csv'
+        output = 'p_results.csv'
         boolean = input('Would you like to visualize the inputs as graphs? (yes/no)')
         main(file_paths, output, boolean)
     else:
