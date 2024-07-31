@@ -6,16 +6,14 @@ Grace Abawe
 
 Python scripts for extracting graph characteristics from Abstract Syntax Trees
 
-For C code:
-First, generate the AST using Clang by running the following command in your terminal:
-
-    clang -Xclang -ast-dump=json -fsyntax-only <sourcefile.c> > ast.txt
-
-
 Ensure that the imported modules are installed and that the python virtual environment is activated.
-Then, execute the python script to parse and extract characteristics from the AST and visualize it by running the following:
 
-    python3 ast_analysis.py
+For C code:
+Then, to build the ASTs, extract characteristics, and visualize, run the following:
+
+    python3 ast_analysis.py  <sourcefiles.c>
+
+Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'c_results.csv'.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -24,7 +22,7 @@ To build the ASTs, extract characteristics, and visualize, run the following:
 
     python3 python_ast_analysis.py <sourcefiles.py> 
 
-Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'results.csv'.
+Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'p_results.csv'.
 
 ---------------------------------------------------------------------------------------------------------------------
 
