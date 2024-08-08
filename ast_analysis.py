@@ -3,7 +3,10 @@ import json
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 import matplotlib.pyplot as plt
+from scipy.stats import entropy
+import numpy as np
 import csv
+import re
 
 def generate_ast(c_file_path, ast_file_path):
     clang_command = f"clang -Xclang -ast-dump=json -fsyntax-only {c_file_path} > {ast_file_path}"
@@ -33,13 +36,42 @@ def parse_ast(ast):
     return G
 
 def analyze_graph(G):
-    depth = nx.dag_longest_path_length(G) if nx.is_directed_acyclic_graph(G) else None
+    depths = dict(nx.single_source_shortest_path_length(G, min(G.nodes())))
+    degrees = sorted((d for n, d in G.degree()), reverse=True)
+    leaf_depths = [depth for node, depth in depths.items() if G.out_degree(node) == 0] #depth from root to leaves
+    clustering_coefficients = list(nx.clustering(G).values())
+    node_types = set()
+    edge_transitions = []
+
+    for node in G.nodes(data=True):
+        node_kind = node[1]['kind']
+        node_types.add(node_kind)
+
+        for successor in G.successors(node[0]):
+            successor_kind = G.nodes[successor]['kind']
+            edge_transitions.append(f"{node_kind} -> {successor_kind}")
     return {
         "num_nodes": G.number_of_nodes(),
         "num_edges": G.number_of_edges(),
-        "degrees": G.degree(),
+        "degrees": degrees,
+        "max_degree": max(degrees),
+        "min_degree": min(degrees),
+        "mean_degree": np.mean(degrees),
+        "degree_variance": np.var(degrees),
         "transitivity": nx.transitivity(G),
-        "depth": depth
+        "depths": leaf_depths,
+        "max_depth": max(leaf_depths),
+        "min_depth": min(leaf_depths),
+        "mean_depth": np.mean(leaf_depths),
+        "clustering_coefficients": clustering_coefficients,
+        "max_clustering": max(clustering_coefficients),
+        "min_clustering": min(clustering_coefficients),
+        "mean_clustering": nx.average_clustering(G),
+        "clustering_variance": np.var(clustering_coefficients),
+        "degree_entropy": entropy(degrees),
+        "depth_entropy": entropy(leaf_depths),
+        "node_types": sorted(list(node_types)),
+        "edge_transitions": edge_transitions
     }
 
 def visualize_graph(G):
@@ -54,11 +86,16 @@ def aggregate_stats(results):
     print("Total Nodes:", sum(result['num_nodes'] for result in results))
     print("Total Edges:", sum(result['num_edges'] for result in results))
     print("Average Transitivity:", sum(result['transitivity'] for result in results) / len(results))
-    print("Max Depth:", max(result['depth'] for result in results))
+    print("Max Depth:", max(result['max_depth'] for result in results))
+    print("Average Degree Mean:", np.mean([result['mean_degree'] for result in results]))
+    print("Average Clustering Coefficient:", np.mean([result['mean_clustering'] for result in results]))
 
 def write_csv(results, output):
     with open(output, 'w', newline='') as csv_file:
-        columns = ['file', 'num_nodes', 'num_edges', 'degrees', 'transitivity', 'depth']
+        columns = ['file', 'num_nodes', 'num_edges', 'degrees', 'max_degree', 'min_degree', 'mean_degree', 
+                'degree_variance', 'transitivity', 'depths', 'max_depth', 'min_depth', 'mean_depth',
+                'clustering_coefficients', 'max_clustering', 'min_clustering', 'mean_clustering', 'clustering_variance',
+                'degree_entropy', 'depth_entropy', 'node_types', 'edge_transitions']
         writer = csv.DictWriter(csv_file, fieldnames=columns)
         writer.writeheader()
         for result in results:
@@ -75,7 +112,6 @@ def main(file_paths, output, bool):
             visualize_graph(G)
         stats['file'] = file_path
         results.append(stats)
-        print(results)
     write_csv(results, output)
     aggregate_stats(results)
 
