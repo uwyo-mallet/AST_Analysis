@@ -40,6 +40,24 @@ def analyze_graph(G):
     degrees = sorted((d for n, d in G.degree()), reverse=True)
     leaf_depths = [depth for node, depth in depths.items() if G.out_degree(node) == 0] #depth from root to leaves
     clustering_coefficients = list(nx.clustering(G).values())
+    #Additional Features (not in paper)
+    #Convert the directed graph to an undirected graph to avoid SCC problems
+    undirected_G = G.to_undirected()
+    if nx.is_connected(undirected_G): #check if undirected graph is connected
+        diameter = nx.diameter(undirected_G)
+        radius = nx.radius(undirected_G)
+        avg_shortest_path = nx.average_shortest_path_length(undirected_G)
+        avg_eccentricity = np.mean(list(nx.eccentricity(undirected_G).values()))
+    else:
+        #Calculate diameter of the largest strongly connected component
+        largest_cc = max(nx.connected_components(undirected_G), key=len)
+        subgraph = G.subgraph(largest_cc)
+        diameter = nx.diameter(subgraph)
+        radius = nx.radius(subgraph)
+        avg_shortest_path = nx.average_shortest_path_length(subgraph)
+        avg_eccentricity = np.mean(list(nx.eccentricity(subgraph).values()))
+    edge_density = G.number_of_edges() / (G.number_of_nodes() * (G.number_of_nodes() - 1)) if G.number_of_nodes() > 1 else 0
+    
     node_types = set()
     edge_transitions = []
 
@@ -70,6 +88,17 @@ def analyze_graph(G):
         "clustering_variance": np.var(clustering_coefficients),
         "degree_entropy": entropy(degrees),
         "depth_entropy": entropy(leaf_depths),
+        #Additional features (not in paper)
+        "betweenness_centrality": nx.betweenness_centrality(G),
+        "eigenvector_centrality": nx.eigenvector_centrality(G, max_iter=500),
+        "assortativity": nx.degree_assortativity_coefficient(G),
+        "average_eccentricity": avg_eccentricity,
+        "diameter": diameter,
+        "radius": radius,
+        "pagerank": nx.pagerank(G, max_iter=500),
+        "edge_density": edge_density,
+        "average_shortest_path": avg_shortest_path,
+        #Node type and edge type transitions
         "node_types": sorted(list(node_types)),
         "edge_transitions": edge_transitions
     }
@@ -89,13 +118,17 @@ def aggregate_stats(results):
     print("Max Depth:", max(result['max_depth'] for result in results))
     print("Average Degree Mean:", np.mean([result['mean_degree'] for result in results]))
     print("Average Clustering Coefficient:", np.mean([result['mean_clustering'] for result in results]))
+    print("Average Eccentricity:", np.mean([result['average_eccentricity'] for result in results]))
+    print("Average Edge Density:", np.mean([result['edge_density'] for result in results]))
 
 def write_csv(results, output):
     with open(output, 'w', newline='') as csv_file:
         columns = ['file', 'num_nodes', 'num_edges', 'degrees', 'max_degree', 'min_degree', 'mean_degree', 
                 'degree_variance', 'transitivity', 'depths', 'max_depth', 'min_depth', 'mean_depth',
                 'clustering_coefficients', 'max_clustering', 'min_clustering', 'mean_clustering', 'clustering_variance',
-                'degree_entropy', 'depth_entropy', 'node_types', 'edge_transitions']
+                'degree_entropy', 'depth_entropy', 'betweenness_centrality', 'eigenvector_centrality',
+                'assortativity', 'average_eccentricity', 'diameter', 'radius', 'pagerank', 'edge_density',
+                'average_shortest_path', 'node_types', 'edge_transitions']
         writer = csv.DictWriter(csv_file, fieldnames=columns)
         writer.writeheader()
         for result in results:
