@@ -41,6 +41,24 @@ def analyze_graph(G):
     leaf_depths = [depth for node, depth in depths.items() if G.out_degree(node) == 0] #depth from root to leaves
     degrees = sorted((d for n, d in G.degree()), reverse=True)
     clustering_coefficients = list(nx.clustering(G).values())
+    #~~~
+    #Additional Features (not in paper)
+    #Convert the directed graph to an undirected graph to avoid SCC problems
+    undirected_G = G.to_undirected()
+    if nx.is_connected(undirected_G): #check if undirected graph is connected
+        diameter = nx.diameter(undirected_G)
+        radius = nx.radius(undirected_G)
+        avg_shortest_path = nx.average_shortest_path_length(undirected_G)
+        avg_eccentricity = np.mean(list(nx.eccentricity(undirected_G).values()))
+    else:
+        #Calculate diameter of the largest strongly connected component
+        largest_cc = max(nx.connected_components(undirected_G), key=len)
+        subgraph = G.subgraph(largest_cc)
+        diameter = nx.diameter(subgraph)
+        radius = nx.radius(subgraph)
+        avg_shortest_path = nx.average_shortest_path_length(subgraph)
+        avg_eccentricity = np.mean(list(nx.eccentricity(subgraph).values()))
+    edge_density = G.number_of_edges() / (G.number_of_nodes() * (G.number_of_nodes() - 1)) if G.number_of_nodes() > 1 else 0
     return {
         #Number of Nodes and Edges
         "Nodes": G.number_of_nodes(),
@@ -62,11 +80,21 @@ def analyze_graph(G):
         "Clustering Coefficients": clustering_coefficients,
         "Max Clustering": max(clustering_coefficients),
         "Min Clustering": min(clustering_coefficients),
-        "Average Clustering": nx.average_clustering(G),
+        "Mean Clustering": nx.average_clustering(G),
         "Clustering Variance": np.var(clustering_coefficients),
         #Entropy
         "Degree Entropy": entropy(degrees),
-        "Depth Entropy": entropy(leaf_depths)
+        "Depth Entropy": entropy(leaf_depths),
+        #Additional features (not in paper)
+        "Betweenness Centrality": nx.betweenness_centrality(G),
+        "Eigenvector Centrality": nx.eigenvector_centrality_numpy(G, max_iter=500),
+        "Assortativity": nx.degree_assortativity_coefficient(G),
+        "Average Eccentricity": avg_eccentricity,
+        "Diameter": diameter,
+        "Radius": radius,
+        "Pagerank": nx.pagerank(G, max_iter=500),
+        "Edge Density": edge_density,
+        "Average Shortest Path": avg_shortest_path,
     }
 
 # Function to visualize the graph
@@ -97,7 +125,9 @@ def aggregate_stats(results):
     print("Average Transitivity:", sum(result['Transitivity'] for result in results) / len(results))
     print("Max Depth:", max(result['Max Depth'] for result in results))
     print("Average Degree Mean:", np.mean([result['Mean Degree'] for result in results]))
-    print("Average Clustering Coefficient:", np.mean([result['Average Clustering'] for result in results]))
+    print("Average Clustering Coefficient:", np.mean([result['Mean Clustering'] for result in results]))
+    print("Average Eccentricity:", np.mean([result['Average Eccentricity'] for result in results]))
+    print("Average Edge Density:", np.mean([result['Edge Density'] for result in results]))
 
 
 #Function to output to .csv file
@@ -105,7 +135,9 @@ def write_csv(results, output):
     with open(output, 'w', newline='') as file:
         columns = ['File', 'Nodes', 'Edges', 'Degrees', 'Max Degree', 'Min Degree', 'Mean Degree', 'Degree Variance', 
                 'Transitivity', 'Depths', 'Max Depth', 'Min Depth', 'Mean Depth', 'Clustering Coefficients', 'Max Clustering',
-                'Min Clustering', 'Average Clustering', 'Clustering Variance', 'Degree Entropy', 'Depth Entropy']
+                'Min Clustering', 'Mean Clustering', 'Clustering Variance', 'Degree Entropy', 'Depth Entropy',  
+                'Betweenness Centrality', 'Eigenvector Centrality', 'Assortativity', 'Average Eccentricity', 
+                'Diameter', 'Radius', 'Pagerank', 'Edge Density', 'Average Shortest Path',]
         writer = csv.DictWriter(file, fieldnames=columns)
         writer.writeheader()
         for result in results:
