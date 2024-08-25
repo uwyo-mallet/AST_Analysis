@@ -17,6 +17,7 @@ Then, to build the ASTs, extract characteristics, and visualize, run the followi
     python ast_analysis.py -g <sourcefiles.c>
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'c_results.csv'.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For python code:
