@@ -38,7 +38,7 @@ If experiencing issues with uninstalled modules, try running:
 Tutorial for creating and activating a virtual environment:
     https://python.land/virtual-environments/virtualenv
 
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Feature Extraction Documentation
 
