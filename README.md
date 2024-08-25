@@ -26,7 +26,7 @@ To build the ASTs, extract characteristics, and visualize, run the following:
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'p_results.csv'.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Example code files have been included in the ast_analysis folder, such as simple.c, matrix.c, and simple.py
 
@@ -38,7 +38,7 @@ If experiencing issues with uninstalled modules, try running:
 Tutorial for creating and activating a virtual environment:
     https://python.land/virtual-environments/virtualenv
 
----------------------------------------------------------------------------------------------------------------------
+
 
 Feature Extraction Documentation
 
