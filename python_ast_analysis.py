@@ -1,13 +1,11 @@
 # Uses Python Abstract Syntax Trees to extract graph characteristics
-
 import ast
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import entropy
-import csv
-import os
+import argparse
 
 #Parse Python AST and build a graph
 class BuildAST(ast.NodeVisitor):
@@ -37,11 +35,10 @@ class BuildAST(ast.NodeVisitor):
 
 # Function to extract graph characteristics
 def analyze_graph(G):
-    depths = dict(nx.single_source_shortest_path_length(G, 0))
-    leaf_depths = [depth for node, depth in depths.items() if G.out_degree(node) == 0] #depth from root to leaves
+    depths = dict(nx.single_source_shortest_path_length(G, min(G.nodes())))
     degrees = sorted((d for n, d in G.degree()), reverse=True)
+    leaf_depths = [depth for node, depth in depths.items() if G.out_degree(node) == 0] #depth from root to leaves
     clustering_coefficients = list(nx.clustering(G).values())
-    #~~~
     #Additional Features (not in paper)
     #Convert the directed graph to an undirected graph to avoid SCC problems
     undirected_G = G.to_undirected()
@@ -59,6 +56,7 @@ def analyze_graph(G):
         avg_shortest_path = nx.average_shortest_path_length(subgraph)
         avg_eccentricity = np.mean(list(nx.eccentricity(subgraph).values()))
     edge_density = G.number_of_edges() / (G.number_of_nodes() * (G.number_of_nodes() - 1)) if G.number_of_nodes() > 1 else 0
+
     return {
         #Number of Nodes and Edges
         "Nodes": G.number_of_nodes(),
@@ -97,7 +95,6 @@ def analyze_graph(G):
         "Average Shortest Path": avg_shortest_path,
     }
 
-# Function to visualize the graph
 def visualize_graph(G):
     pos = graphviz_layout(G, prog='dot')
     labels = nx.get_node_attributes(G, 'label')
@@ -106,18 +103,17 @@ def visualize_graph(G):
     plt.show()
 
 #Function to create graph out of AST
-def process_file(path, bool):
+def process_file(path, visualize):
     with open(path, 'r') as file:
         python_code = file.read()
     root = ast.parse(python_code)
     build = BuildAST()
     G = build.build_graph(root)
     stats = analyze_graph(G)
-    if (bool.casefold() == 'yes'): #visualize graph
+    if (visualize==True): #visualize graph
         visualize_graph(G)
     return stats
 
-#Function to print aggregate statistics
 def aggregate_stats(results):
     print("Aggregate Statistics:")
     print("Total Nodes:", sum(result['Nodes'] for result in results))
@@ -129,37 +125,56 @@ def aggregate_stats(results):
     print("Average Eccentricity:", np.mean([result['Average Eccentricity'] for result in results]))
     print("Average Edge Density:", np.mean([result['Edge Density'] for result in results]))
 
+def print_results(stats, file):
+    print("Statistics for file:", file)
+    print("Number of nodes:", stats['Nodes'])
+    print("Number of Edges:", stats['Edges'])
+    print("Degrees:", stats['Degrees'])
+    print("Maximum Degree:", stats['Max Degree'])
+    print("Minimum Degree:", stats['Min Degree'])
+    print("Mean Degree:", stats['Mean Degree'])
+    print("Degree Variance:", stats['Degree Variance'])
+    print("Transitivity:", stats['Transitivity'])
+    print("Leaf Depths:", stats['Depths'])
+    print("Max Depth:", stats['Max Depth'])
+    print("Min Depth:", stats['Min Depth'])
+    print("Mean Depth:", stats['Mean Depth'])
+    print("Clustering Coefficients:", stats['Clustering Coefficients'])
+    print("Max Clustering:", stats['Max Clustering'])
+    print("Min Clustering:", stats['Min Clustering'])
+    print("Mean Clustering:", stats['Mean Clustering'])
+    print("Clustering Variance:", stats['Clustering Variance'])
+    print("Degree Entropy:", stats['Degree Entropy'])
+    print("Depth Entropy:", stats['Depth Entropy'])
+    print("Betweenness Centrality:", stats['Betweenness Centrality'])
+    print("Eigenvector Centrality:", stats['Eigenvector Centrality'])
+    print("Assortativity:", stats['Assortativity'])
+    print("Average Eccentricity:", stats['Average Eccentricity'])
+    print("Diameter:", stats['Diameter'])
+    print("Radius:", stats['Radius'])
+    print("Pagerank:", stats['Pagerank'])
+    print("Edge Density:", stats['Edge Density'])
+    print("Average Shortest Path:", stats['Average Shortest Path'])
+    print("")
 
-#Function to output to .csv file
-def write_csv(results, output):
-    with open(output, 'w', newline='') as file:
-        columns = ['File', 'Nodes', 'Edges', 'Degrees', 'Max Degree', 'Min Degree', 'Mean Degree', 'Degree Variance', 
-                'Transitivity', 'Depths', 'Max Depth', 'Min Depth', 'Mean Depth', 'Clustering Coefficients', 'Max Clustering',
-                'Min Clustering', 'Mean Clustering', 'Clustering Variance', 'Degree Entropy', 'Depth Entropy',  
-                'Betweenness Centrality', 'Eigenvector Centrality', 'Assortativity', 'Average Eccentricity', 
-                'Diameter', 'Radius', 'Pagerank', 'Edge Density', 'Average Shortest Path',]
-        writer = csv.DictWriter(file, fieldnames=columns)
-        writer.writeheader()
-        for result in results:
-            writer.writerow(result)
-
-
-def main(file_paths, output, bool):
+def main(file_paths, visualize):
     results = []
     for file_path in file_paths:
-        stats = process_file(file_path, bool)
-        stats['File'] = file_path
+        stats = process_file(file_path, visualize)
         results.append(stats)
-    write_csv(results, output)
+        print_results(stats, file_path)
     aggregate_stats(results)
-        
+
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) >= 2:
         file_paths = sys.argv[1:] #take multiple files
-        output = 'p_results.csv'
-        boolean = input('Would you like to visualize the inputs as graphs? (yes/no)')
-        main(file_paths, output, boolean)
+        parser = argparse.ArgumentParser(description="Analyze Clang ASTs and extract graph features.")
+        #The -g flag should be specific before input C files to visualize graphs
+        parser.add_argument("-g", "--graph", action="store_true", help="Visualize the graph after processing.")
+        parser.add_argument("files", nargs='+', help="List of input Clang AST files to process.")
+        args = parser.parse_args()
+        main(file_paths=args.files, visualize=args.graph)
     else:
-        print("Error: Specify python file path(s) as second argument")
+        print("Error: Specify Python file path(s).")    
