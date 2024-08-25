@@ -14,22 +14,20 @@ For C code:
 Then, to build the ASTs, extract characteristics, and visualize, run the following:
 
     python ast_analysis.py <sourcefiles.c>
-or
     python ast_analysis.py -g <sourcefiles.c>
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'c_results.csv'.
---------------------------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For python code:
 To build the ASTs, extract characteristics, and visualize, run the following:
 
     python python_ast_analysis.py <sourcefiles.py> 
-or 
     python python_ast_analysis.py -g <sourcefiles.py> 
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'p_results.csv'.
 
----------------------------------------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Example code files have been included in the ast_analysis folder, such as simple.c, matrix.c, and simple.py
 
