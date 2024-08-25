@@ -8,10 +8,14 @@ Python scripts for extracting graph characteristics from Abstract Syntax Trees
 
 Ensure that the imported modules are installed and that the python virtual environment is activated.
 
+To visualize AST graphs, specify the -g commandline flag before sourcefiles. If no -g is added, graphs will not be visualized.
+
 For C code:
 Then, to build the ASTs, extract characteristics, and visualize, run the following:
 
-    python3 ast_analysis.py  <sourcefiles.c>
+    python ast_analysis.py <sourcefiles.c>
+or
+    python ast_analysis.py -g <sourcefiles.c>
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'c_results.csv'.
 --------------------------------------------------------------------------------------------------------------------
@@ -19,7 +23,9 @@ Multiple file paths can be specificied, it will prompt you for wether you would 
 For python code:
 To build the ASTs, extract characteristics, and visualize, run the following:
 
-    python3 python_ast_analysis.py <sourcefiles.py> 
+    python python_ast_analysis.py <sourcefiles.py> 
+or 
+    python python_ast_analysis.py -g <sourcefiles.py> 
 
 Multiple file paths can be specificied, it will prompt you for wether you would like to visualize graphs, and the output will be saved in 'p_results.csv'.
 
