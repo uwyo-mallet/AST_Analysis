@@ -163,7 +163,7 @@ def main(file_paths, visualize):
         stats = process_file(file_path, visualize)
         results.append(stats)
         print_results(stats, file_path)
-    aggregate_stats(results)
+    #aggregate_stats(results)
 
 
 if __name__ == "__main__":
